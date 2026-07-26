@@ -66,7 +66,7 @@ class ReminderService {
     await _tts.setPitch(1.0);
     
     // ضمان اكتمال نطق الدعاء قبل تحرير الموارد
-    await _tts.awaitTtsCompletion(true);
+    await _tts.awaitSpeakCompletion(true);
     _isTtsInitialized = true;
   }
 
