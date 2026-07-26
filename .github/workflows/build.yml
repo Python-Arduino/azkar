@@ -24,8 +24,55 @@ jobs:
       with:
         channel: 'stable'
 
-    - name: Generate Android Project Files
-      run: flutter create . --platforms=android
+    - name: Clean and Re-create Android Scaffold
+      run: |
+        rm -rf android
+        flutter create . --platforms=android --org com.example.azkar
+
+    - name: Inject Custom AndroidManifest.xml
+      run: |
+        cat << 'EOF' > android/app/src/main/AndroidManifest.xml
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+            <uses-permission android:name="android.permission.WAKE_LOCK"/>
+            <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+            <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+            <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+            <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+
+            <application
+                android:label="أذكار أمي"
+                android:icon="@mipmap/ic_launcher">
+                
+                <activity
+                    android:name=".MainActivity"
+                    android:exported="true"
+                    android:launchMode="singleTop"
+                    android:theme="@style/LaunchTheme"
+                    android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+                    android:hardwareAccelerated="true"
+                    android:windowSoftInputMode="adjustResize">
+                    <intent-filter>
+                        <action android:name="android.intent.action.MAIN"/>
+                        <category android:name="android.intent.category.LAUNCHER"/>
+                    </intent-filter>
+                </activity>
+                
+                <service
+                    android:name="id.flutter.flutter_background_service.BackgroundService"
+                    android:foregroundServiceType="specialUse"
+                    android:exported="false">
+                    <property
+                        android:name="android.app.property.SPECIAL_USE_FGS_SUBTYPE"
+                        android:value="Athkar periodic audio reminder"/>
+                </service>
+
+                <meta-data
+                    android:name="flutterEmbedding"
+                    android:value="2" />
+            </application>
+        </manifest>
+        EOF
 
     - name: Get Dependencies
       run: flutter pub get
