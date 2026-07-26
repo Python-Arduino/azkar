@@ -128,6 +128,3 @@ jobs:
       with:
         name: Athkar-Mom-APK
         path: build/app/outputs/flutter-apk/app-release.apk
-      with:
-        name: Athkar-Mom-APK
-        path: build/app/outputs/flutter-apk/app-release.apk
