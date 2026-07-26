@@ -1,126 +1,19 @@
 name: Build Android APK
 
-on:
-  push:
-    branches: [ main, master ]
-  workflow_dispatch:
+on: [push, workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
-    - name: Set up Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '17'
-
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        channel: 'stable'
-
-    - name: Re-create Clean Android Scaffold
-      run: |
-        rm -rf android
-        flutter create . --platforms=android --org com.example.azkar
-
-    - name: Inject Perfect build.gradle.kts
-      run: |
-        cat << 'EOF' > android/app/build.gradle.kts
-        plugins {
-            id("com.android.application")
-            id("kotlin-android")
-            id("dev.flutter.flutter-gradle-plugin")
-        }
-
-        android {
-            namespace = "com.example.azkar"
-            compileSdk = 34
-
-            compileOptions {
-                isCoreLibraryDesugaringEnabled = true
-                sourceCompatibility = JavaVersion.VERSION_1_8
-                targetCompatibility = JavaVersion.VERSION_1_8
-            }
-
-            defaultConfig {
-                applicationId = "com.example.azkar"
-                minSdk = 21
-                targetSdk = 34
-                versionCode = 1
-                versionName = "1.0.0"
-            }
-
-            buildTypes {
-                release {
-                    signingConfig = signingConfigs.getByName("debug")
-                }
-            }
-        }
-
-        dependencies {
-            coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
-        }
-        EOF
-
-    - name: Inject Custom AndroidManifest.xml
-      run: |
-        cat << 'EOF' > android/app/src/main/AndroidManifest.xml
-        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-            <uses-permission android:name="android.permission.WAKE_LOCK"/>
-            <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-            <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
-            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-            <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-            <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
-
-            <application
-                android:label="أذكار أمي"
-                android:icon="@mipmap/ic_launcher">
-                
-                <activity
-                    android:name=".MainActivity"
-                    android:exported="true"
-                    android:launchMode="singleTop"
-                    android:theme="@style/LaunchTheme"
-                    android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
-                    android:hardwareAccelerated="true"
-                    android:windowSoftInputMode="adjustResize">
-                    <intent-filter>
-                        <action android:name="android.intent.action.MAIN"/>
-                        <category android:name="android.intent.category.LAUNCHER"/>
-                    </intent-filter>
-                </activity>
-                
-                <service
-                    android:name="id.flutter.flutter_background_service.BackgroundService"
-                    android:foregroundServiceType="specialUse"
-                    android:exported="false">
-                    <property
-                        android:name="android.app.property.SPECIAL_USE_FGS_SUBTYPE"
-                        android:value="Athkar periodic audio reminder"/>
-                </service>
-
-                <meta-data
-                    android:name="flutterEmbedding"
-                    android:value="2" />
-            </application>
-        </manifest>
-        EOF
-
-    - name: Get Dependencies
-      run: flutter pub get
-
-    - name: Build APK
-      run: flutter build apk --release --no-tree-shake-icons
-
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Athkar-Mom-APK
-        path: build/app/outputs/flutter-apk/app-release.apk
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - run: flutter create . --platforms=android
+      - run: flutter pub get
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v3
+        with:
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
