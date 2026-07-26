@@ -1,0 +1,23 @@
+name: azkar
+description: "Athkar Mom App"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_tts: ^4.2.0
+  flutter_local_notifications: ^18.0.1
+  shared_preferences: ^2.5.2
+  permission_handler: ^11.4.0
+  flutter_background_service: ^5.0.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
