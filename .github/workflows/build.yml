@@ -24,10 +24,11 @@ jobs:
       with:
         channel: 'stable'
 
-    - name: Clean and Re-create Android Scaffold
+    - name: Create Clean Android Structure
       run: |
         rm -rf android
         flutter create . --platforms=android --org com.example.azkar
+        sed -i 's/compileSdk = .*/compileSdk = 34/' android/app/build.gradle || true
 
     - name: Inject Custom AndroidManifest.xml
       run: |
