@@ -29,56 +29,23 @@ jobs:
         rm -rf android
         flutter create . --platforms=android --org com.example.azkar
 
-    - name: Inject Android Root Gradle Files
+    - name: Inject Clean build.gradle.kts with Desugaring Support
       run: |
-        cat << 'EOF' > android/settings.gradle
-        pluginManagement {
-            def flutterSdkPath = {
-                def properties = new Properties()
-                def propertiesFile = new File(rootDir, 'local.properties')
-                if (propertiesFile.exists()) {
-                    propertiesFile.withReader('UTF-8') { reader -> properties.load(reader) }
-                }
-                def flutterSdkPath = properties.getProperty('flutter.sdk')
-                assert flutterSdkPath != null : "flutter.sdk not set in local.properties"
-                return flutterSdkPath
-            }()
-
-            includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
-
-            repositories {
-                google()
-                mavenCentral()
-                gradlePluginPortal()
-            }
-        }
-
+        cat << 'EOF' > android/app/build.gradle.kts
         plugins {
-            id "dev.flutter.flutter-plugin-loader" version "1.0.0"
-            id "com.android.application" version "8.1.0" apply false
-            id "org.jetbrains.kotlin.android" version "1.8.22" apply false
-        }
-
-        include ":app"
-        EOF
-
-    - name: Inject Correct app/build.gradle
-      run: |
-        cat << 'EOF' > android/app/build.gradle
-        plugins {
-            id "com.android.application"
-            id "kotlin-android"
-            id "dev.flutter.flutter-gradle-plugin"
+            id("com.android.application")
+            id("kotlin-android")
+            id("dev.flutter.flutter-gradle-plugin")
         }
 
         android {
-            namespace "com.example.azkar"
-            compileSdk 34
+            namespace = "com.example.azkar"
+            compileSdk = 34
 
             compileOptions {
-                coreLibraryDesugaringEnabled true
-                sourceCompatibility JavaVersion.VERSION_1_8
-                targetCompatibility JavaVersion.VERSION_1_8
+                isCoreLibraryDesugaringEnabled = true
+                sourceCompatibility = JavaVersion.VERSION_1_8
+                targetCompatibility = JavaVersion.VERSION_1_8
             }
 
             kotlinOptions {
@@ -86,22 +53,22 @@ jobs:
             }
 
             defaultConfig {
-                applicationId "com.example.azkar"
-                minSdk 21
-                targetSdk 34
-                versionCode 1
-                versionName "1.0.0"
+                applicationId = "com.example.azkar"
+                minSdk = 21
+                targetSdk = 34
+                versionCode = 1
+                versionName = "1.0.0"
             }
 
             buildTypes {
                 release {
-                    signingConfig signingConfigs.debug
+                    signingConfig = signingConfigs.getByName("debug")
                 }
             }
         }
 
         dependencies {
-            coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+            coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
         }
         EOF
 
@@ -158,6 +125,9 @@ jobs:
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
+      with:
+        name: Athkar-Mom-APK
+        path: build/app/outputs/flutter-apk/app-release.apk
       with:
         name: Athkar-Mom-APK
         path: build/app/outputs/flutter-apk/app-release.apk
