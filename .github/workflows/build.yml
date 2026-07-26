@@ -29,48 +29,13 @@ jobs:
         rm -rf android
         flutter create . --platforms=android --org com.example.azkar
 
-    - name: Inject Clean build.gradle.kts with Desugaring Support
+    - name: Enable Core Library Desugaring in Existing Gradle File
       run: |
-        cat << 'EOF' > android/app/build.gradle.kts
-        plugins {
-            id("com.android.application")
-            id("kotlin-android")
-            id("dev.flutter.flutter-gradle-plugin")
-        }
-
-        android {
-            namespace = "com.example.azkar"
-            compileSdk = 34
-
-            compileOptions {
-                isCoreLibraryDesugaringEnabled = true
-                sourceCompatibility = JavaVersion.VERSION_1_8
-                targetCompatibility = JavaVersion.VERSION_1_8
-            }
-
-            kotlinOptions {
-                jvmTarget = "1.8"
-            }
-
-            defaultConfig {
-                applicationId = "com.example.azkar"
-                minSdk = 21
-                targetSdk = 34
-                versionCode = 1
-                versionName = "1.0.0"
-            }
-
-            buildTypes {
-                release {
-                    signingConfig = signingConfigs.getByName("debug")
-                }
-            }
-        }
-
-        dependencies {
-            coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
-        }
-        EOF
+        # Inject Desugaring into compileOptions
+        sed -i '/compileOptions {/a \        isCoreLibraryDesugaringEnabled = true' android/app/build.gradle.kts
+        
+        # Inject Desugaring dependency
+        sed -i '/dependencies {/a \    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")' android/app/build.gradle.kts
 
     - name: Inject Custom AndroidManifest.xml
       run: |
